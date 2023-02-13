@@ -1,0 +1,692 @@
+SQL -- second highest salary -- how to find using different methodsAnti join, cross join and combination of joinTable 1 -- has columns 1,2,3,4Table 2 -- has columns 3,4,5,6How to get a table with columns 1,2,5,6Write a query to find first 3 letters of a name     select sunstrung(1,3)Query to find update null values for a particular column4 coleasce and réparation differenceData factoryIntegration runtime and it's typesSteps of self hosted runtimeDifferent case based scenarios on how to build pipelines --1. Suppose you have to change date/time as per when the data is being pushed to storage account, how will you build that pipeline2. Suppose you have a some blanks in columns and you want to change it to null before transformation. How to do so3 update date time for parquet files4 suppose you have 3 types of files in sa1 and you want to move it to sa 2 but make sure that there are 3 folders in sa2 and one for each typeThere are other case based scenarios but I don't remember those.You can find it in the YouTube channel -- most questions were asked from her case based scenarios videosDatabricksHow will you load large amount of dataChange data capture using data bricks and data factory Delta transformationPythonList, dictionary, tuple differenceDef function queries (don't remember exact)How to generate random numbersHow to sort in python without using sort functionReindexing in pandasDifference in pandaa and numpy functionsHow to use array from numpy in pandas How to create series in pandas How to categorize in pandasWhat is time seriesPysparkSince I know basics only theory questions was askedPyspark serialisersRDDPYSPARK CONTEXTSPARK APIsFollowing interview questions shared by Rahul ( LinkedIn) Please can I ask if you all can try to answer - (Hint- everyone know the answer only the thing is we need to present this to interviewers in a nice ways ) Let’s give a try Q1. I want to create No Sql table on top of data frames how would you do that?Q2. What are different modes in spark?Q3. How would you replace null values in Data Frame with 0?Q4. I have to rename a column in DF to some other name, How would you do it?Q5. Difference between spark 1.6 and 2.X?Q6. How do you create a Data Frame?Q7. Tell me syntax to create RDD from a file?Q8. If you are reading from the CSV or text file, will you follow the same approach or different in spark?Q9. In what scenario we will use coalesce and repartition?Q10. Why spark fast than traditional Hadoop?Q11. What is rdd lineage?Q12. What is spark?Q13. How to enforce schema on a data frame?Q14. What is spark config? Can you configure CPU cores in SparkContect?object WordCount {
+	
+	def main(args: Array[String]) {
+		val sc = new SparkContext("local", "WordCountSorted")
+		val rdd = sc.textFile("../books/file.txt")
+		val rdd1 = rdd.flatMap(x => x.split("\\W+")).map(x => x.tolowercase())
+		val rdd2 = rdd1.countByValue()
+		rdd2.foreach(println)		
+	}
+}
+
+object WordCountSorted  {
+	def main(args : Array[String]) {
+		val sc = new SparkContext("local", "WordCountSorted")
+		val rdd = sc.textFile("../books/file.txt")
+		val rdd2 = rdd.flatMap(x => x.split("\\W+"))
+		val rdd3 = rdd2.map(x => x.toLowerCase())
+		val rdd4 = rdd3.map((x => (x,1))
+		val rdd5 = rdd4.reduceByKey((x,y) => (x+y))
+		val rdd6 = rdd5.map(x => (x._2,x._1)).sortByKey()
+		val rdd7 = rdd6.map(x => (x._2,x._1)).collect()
+		
+		rdd7.foreach(println)
+	}
+}
+
+object AmountSpentByCust {
+	def splitOnlyIdAmt(line: String) = {
+		val fields = line.split(",")
+		ID = fields(0).toInt
+		amt = fields(3).toFloat()
+		(ID,amt)
+	}
+	def main(args: Array[String]) {
+		val sc = new SparkContext("local", "AmountSpentByCust")
+		val rdd = sc.textFile("../books/file.txt")
+		val rdd1 = rdd.map(splitOnlyIdAmt)
+		val rdd2 = rdd1.reduceByKey((x,y) => (x+y))
+		val rdd3 = rdd2.collect()
+		rdd3.foreach(println)
+	}
+}
+
+
+object TotalSpentByCust {
+	def newMethod(line: String) = {
+		fields = line.split(",")
+		val ID = fields(0).toInt
+		val amt = fields(3).toFloat
+		(ID, amt)
+	}
+	
+	def main(args: Array[String]) {
+		val sc = new SparkContext("local", "TotalSpentByCust")
+		val rdd = sc.textFile("../books/file.txt")
+		val rdd1 = rdd.map(newMethod)
+		val rdd2 = rdd1.reduceByKey((x,y) => (x+y)).map(x=> (x._2,x._1))
+		val rdd3 = rdd2.sortByKey()
+		val rdd4 = rdd3.map(x => (x._2,x._1)).collect()
+		
+		rdd4.foreach(println)
+	}
+}
+
+
+
+
+Interview questions
+*******************
+
+1. dag and lineage graph
+Ans: 
+Lineage Graph : When a new RDD has been created from an existing RDD, that new RDD contains a pointer to the parent RDD. all the 
+dependencies between the RDDs will be logged in a graph. This graph is called the lineage graph.
+
+Directed Acyclic Graph(DAG): DAG in Apache Spark is a combination of Vertices as well as Edges. In DAG vertices represent the RDDs and the edges represent 
+the Operation to be applied on RDD.
+Every edge in DAG is directed from earlier to later in a sequence.When we call anAction, the created DAG is submitted to DAG Scheduler which further 
+splits the graph into the stages of the task.
+
+2. case class and simple class
+Ans:
+Case Class syntax : case class Note(name: String, duration: String, octave: Int)
+We can create case class objects without using “new” keyword.
+can use case classes in Pattern Matching.
+By default, Case class and Case Objects are Serializable.
+By default, Scala Compiler adds toString, hashCode and equals methods. We can avoid writing this boilerplate code.
+By default, Scala compiler prefixes “val” for all constructor parameters. 
+
+
+3. rdd and dataframe and dataset
+4. spark 1.6x and spark 2.0
+Ans: 
+SparkSession is now the new entry point of Spark that replaces the old SQLContext andHiveContext. 
+Dataset API and DataFrame API are unified. 
+Dataset and DataFrame API unionAll has been deprecated and replaced by union
+Dataset and DataFrame API registerTempTable has been deprecated and replaced by createOrReplaceTempView
+CREATE TABLE ... LOCATION is equivalent to CREATE EXTERNAL TABLE ... LOCATION in order to prevent accidental dropping the existing data.
+To create managed tables, Users are not allowed to specify the location for Hive managed tables.
+
+5. val a = sc.parallelize list()
+6. string based scala programs
+7. different versions of application 
+Ans : 
+HDFS - 2.6, YARN : 2.7.3, Hive : 1.2.1, Sqoop - 1.4.6, Spark - 2.0x
+8. broadcast variable and accumulator examples
+Ans: 
+Broadcast Variable : Broadcast variables allow the programmer to keep a read-only variable cached on each machine rather than shipping a copy of it with tasks.
+Accumulators – Accumulators help update the values of variables in parallel while executing.
+
+
+Xebia Interview Questions
+*************************
+
+1. how to give permission to a file present in hdfs
+Ans : 
+You can change the owner and group names with the –chown command, as shown here:
+	$ hdfs dfs –chown sam:produsers  /data/customers/names.txt
+You can change just the group of a user with the chgrp command, as shown here:
+	hdfs dfs –chgrp marketing /users/sales/markets.txt
+You can give permission by chmod command
+	hdfs dfs –chmod [-R] <mode> <file/dir>
+
+2. difference between groupby and reduce by
+Ans: 
+groupByKey() is just to group your dataset based on a key. It will result 
+in data shuffling when RDD is not already partitioned. groupByKey can cause out of disk problems as data is sent over the network and collected on the reduce workers
+
+reduceByKey() is something like grouping + aggregation. It will shuffle less data unlike groupByKey(). Data is combined 
+at each partition , only one output for one key at each partition to send over network. ReduceByKey required combining all your values into another value with the exact same type.
+
+aggregateByKey() is logically same as reduceByKey() but it lets you return result in different type. In another words, 
+it lets you have a input as type x and aggregate result as type y.
+
+combineByKey() - Reduce by key internally calls combineBykey. Hence the basic way of task execution is same for both. The choice of CombineByKey over 
+reduceBykey is when the input Type and output Type is not expected to be the same. 
+So combineByKey will have a extra overhead of converting one type to another. If the type conversion is omitted there is no difference at all. 
+
+3. page in spark
+Ans:
+_page = Indicates the page number of the result set to return, where 1 is the first page. This value cannot exceed 100000.
+PageSize = The number of rows that are returned in a single page.
+
+4. spark-shell/ spark-submit
+5. caching in spark : memory only storage level.
+Ans: 
+cache is merely persist with the default storage level MEMORY_ONLY.
+Caching or persistence are optimisation techniques for Spark computations. They help saving interim partial results so they can be reused in subsequent stages. 
+These interim results as RDDs are thus kept in memory (default) or more solid storages like disk and/or replicated.
+RDDs can be cached using cache operation. They can also be persisted using persist operation.
+
+Cache method : 
+cache(): this.type = persist()
+Persist method: 
+persist(): this.type
+Unpersist method:
+unpersist(blocking: Boolean = true): this.type
+
+6. if you are doing something again and again, best way to do it
+7. how internally bucketing works : 
+Ans :  
+Bucketing concept is based on Hash Function. Hash value of the key % num of buckets.
+The bucket key and the no of buckets are explicitly mentioned at the time of table creation.
+clustered by (department) into 3 buckets.
+
+
+8. I have a dataframe which is having 5 columns. i need to add a column. how i will add 
+Ans: 
+using .withColumn()  method
+lit function is for adding literal values as a column
+import org.apache.spark.sql.functions._
+df.withColumn("D", lit(750))
+
+
+9. What is spark context/spark session/ hivecontext/ sqlContext
+Ans:
+Spark Context - SparkContext (aka Spark context) is the heart of a Spark application. ... Once a SparkContext is created you can use it to create RDDs, 
+accumulators and broadcast variables, access Spark services and run jobs (until SparkContext is stopped).
+
+Starting from Apache Spark 2.0, Spark Session is the new entry point for Spark applications.
+
+Prior to 2.0, SparkContext was the entry point for spark jobs. RDD was one of the main APIs then, and it was created and manipulated using Spark Context. For every other APIs, different contexts were required - 
+For SQL, SQL Context was required; For Streaming, Streaming Context was required; For Hive, Hive Context was required.
+
+Spark Session also includes all the APIs available in different contexts - Spark Context, SQL Context, Streaming Context, Hive Context.
+
+
+10. what is spark executor? / driver
+Ans:
+Executors are Spark processes that run computations and store the data on the worker node. The final tasks by SparkContext are transferred to executors for their execution.
+Every spark application will have one executor on each worker node. The executor memory is basically a measure on how much memory of the worker node will the application utilize.
+
+Spark Driver : Spark Driver is the program that runs on the master node of the machine and declares transformations and actions on data RDDs. In simple terms, a driver in 
+Spark creates SparkContext
+
+
+11. What is resilient in RDD. What is RDD.
+Ans: 
+Resilient : Immutable
+RDD : A RDD is a resilient and distributed collection of records spread over one or many partitions.
+
+12. Difference between rdd and dataframe and Dataset
+Ans : 
+RDD :  It is Read-only partition collection of records. 
+DataFrame: Unlike an RDD, data organized into named columns. In simple terms, DataFrame is Schema RDD
+Dataset  : Datasets in Apache Spark are an extension of DataFrame API which provides type-safe, object-oriented programming interface.
+
+13. what is spark? / what is YARN
+Ans:
+Apache Spark is an in-memory distributed data processing engine and YARN is a cluster management technology. Yarn provides central and 
+resource management platform to deliver scalable operations across the cluster.
+
+14. Components of Spark 
+Ans: Spark Core, Spark SQL, Spark Streaming, Spark GraphX, Spark MLib
+
+
+Disk out of space or some common issues : https://www.indix.com/blog/engineering/lessons-from-using-spark-to-process-large-amounts-of-data-part-i/
+
+Legato Interview  Questions
+***************************
+1. Currying in Scala
+Ans: 
+Currying is the technique of transforming a function with multiple arguments into a function with just one argument. 
+
+2. Import at once 1000 records in sqoop
+3. Architecture of Scala
+4. Executor and driver of scala
+5. Difference between groupBy and reduceByKey
+6. Second highest salary
+7. Distribute and Cluster in hive
+Ans:
+ORDER BY x: guarantees global ordering, but does this by pushing all data through just one reducer. 
+This is basically unacceptable for large datasets. You end up one sorted file as output.
+
+SORT BY x: orders data at each of N reducers, but each reducer can receive overlapping ranges of data. You end up with N or more sorted files with overlapping ranges.
+
+DISTRIBUTE BY x: ensures each of N reducers gets non-overlapping ranges of x, but doesn't sort the output of each reducer. 
+You end up with N or unsorted files with non-overlapping ranges.
+
+CLUSTER BY x: ensures each of N reducers gets non-overlapping ranges, then sorts by those ranges at the reducers. 
+This gives you global ordering, and is the same as doing (DISTRIBUTE BY x and SORT BY x). You end up with N or more sorted files with non-overlapping ranges.
+
+
+8. Sqoop - delimitted by @. How to get in a single column
+9. Shell - How to find the hidden files
+Ans : 
+ls -a 'directory path'
+
+10. How to find the file is empty
+Ans:
+-s file_name
+
+11. How to take 10 files into one
+Ans: 
+cat 1.txt 2.txt 3.txt > 0.txt
+
+16. sqoop boundary query
+Ans : 
+--split-by id will split your data uniformly on the basis of number of mappers (default 4).
+--boundary-query "SELECT min(id), max(id) from some_table"
+Sqoop use min value and max value to find out boundaries for creating splits.
+
+12. How mapreduce works
+13. In scala program, if you face memory out of exception, how will you remove it;. What are the scenario where you can get this
+Ans : https://www.indix.com/blog/engineering/lessons-from-using-spark-to-process-large-amounts-of-data-part-i/
+
+14. scala code to find the word count
+15. scala code --  
+val a = list(2,4,6,8,10)
+val b = list(1,3,5,7,9)
+o/p val c = list(1,2,3,4,5,6,7,8,9,10)
+Ans: val c = (a:::b).sorted
+
+17. 2nd highest salary 
+
+L&T Infotech Interview Questions
+*********************************
+1. How to add a column in a data frame
+2. Contructor in scala (syntax)
+Ans: 
+Scala interview questions and answers (Intermediate)
+
+3. Case class in scala (syntax)\
+4. multithreading in scala
+5. Job tracker and task tracker in hadoop
+5. Data locality
+6. Specutive execution 
+Ans: 
+This process is known as speculative execution. When tasks complete, they announce this fact to the JobTracker. 
+Whichever copy of a task finishes first becomes the definitive copy. If other copies were executing speculatively, 
+Hadoop tells the TaskTrackers to abandon the tasks and discard their outputs.
+
+7. what is object in scala
+Ans: 
+Scala interview questions and answers (Intermediate)
+
+8. How to re-run failed action from oozie workflow
+Ans:
+https://community.hortonworks.com/articles/25555/how-to-re-run-failed-action-from-oozie-workflow.html 
+
+*****************************************************************************************************************************************************************************
+*****************************************************************************************************************************************************************************
+
+
+select max(e1.sal), e1.Dept from employee e1, (select max(sal) as sal, Dept from employee group by Dept) e2 
+where e1.Dept = e2.Dept and e1.sal < e2.sal group by e1.Dept
+
+[65000.0,B]
+[45000.0,C]
+[52000.0,A]
+
+SELECT * FROM  (SELECT empID, empName, sal, Dept,  rank() over (PARTITION BY Dept  ORDER BY sal DESC) max_sal FROM employee) WHERE max_sal= 2;
+select * from ( select empid,empname dept,sal denserank() over (partition by dept order by salray dec) rn from emp ) where rn =2;
+[1004,Aditya,65000.0,B,2]
+[1005,Sambit,45000.0,C,2]
+[1006,Sahas,52000.0,A,2]
+
+
+SELECT empID,empName, sal, Dept  FROM  (SELECT empID, empName, sal, Dept,  rank() over (PARTITION BY Dept  ORDER BY sal DESC) max_sal FROM employee) WHERE max_sal= 2;
+
+[1004,Aditya,65000.0,B]
+[1005,Sambit,45000.0,C]
+[1006,Sahas,52000.0,A]
+
+************************************************************************************************************************************************************************
+*************************************************************************************************************************************************************************
+
+1. Map reduce works
+2. How to load in hive table using spark/scala
+
+// Create dummy data and load it into a DataFrame
+case class rowschema(id:Int, record:String)
+val df = sqlContext.createDataFrame(Seq(rowschema(1,"record1"), rowschema(2,"record2"), rowschema(3,"record3")))
+df.registerTempTable("tempTable")
+ 
+// Create new Hive Table and load tempTable
+sqlContext.sql("create table newHiveTable as select * from tempTable")
+
+
+3. Limitations of spark/scala for hive commands
+4. update, delete in hive
+5. Go through the project code(spark/scala)
+6. CDC (Change data capture) in hive
+7. Difference between different file format like ORC, AVRO, Parquet
+Ans:
+In simplest word, these all are file formats.
+
+Hadoop like big storage and data processing ecosystem need optimized read and write performance oriented data formats.
+
+1) AVRO:-It is row major format.Its primary design goal was schema evolution.In the avro format, we store schema separately from data. Generally avro schema file (.avsc) is maintained.
+2) ORC
+
+Column oriented storage format.
+Originally it is Hive's Row Columnar file. Now improved as Optimized RC (ORC)
+Schema is with the data, but as a part of footer.
+Data is stored as row groups and stripes.
+Each stripe maintains indexes and stats about data it stores.
+3) Parquet
+
+Similar to ORC. Based on google dremel
+Schema stored in footer
+Column oriented storage format
+Has integrated compression and indexes
+Space or compression wise I found them pretty close to each other
+
+Around 10 GB of CSV data compressed to 1.1 GB of ORC with ZLIB compression and same data to 1.2 GB of Parquet GZIP. Both file formats with SNAPPY compression, used around 1.6 GB of space.
+
+Conversion speed wise ORC was little better it took 9 min where as parquet took 10 plus min.
+
+Following link should be useful for more comparision
+
+File Format Benchmark - Avro, JSON, ORC & Parquet
+
+8. sql query : 
+
+a) 
+dept_id, dept_name
+emp_id, emp_name
+emp_id, dept_id, sal
+find emp_name,dept_name from the above table whose sal is max
+
+Ans:
+select emp.emp_name as emp_name, dept.dept_name dept_name
+from dept, emp, emp_details where
+emp.emp_id=emp_details.emp_id and 
+emp_details.dept_id=dept.dept_id and  
+emp_details.sal in (select max(sal) from emp_details) 
+
+
+select en.emp_name,dn.dept_name from 
+employee en join department dn join 
+(select emp_id,dept_id from emp_dep where salary in
+(select max(salary) from emp_dep)) a
+on
+en.emp_id = a.emp_id and dn.dept_id = a.dept_id ; 
+
+b)
+one table has 10 records.
+other table has 4 records out of which 2 records are updated record and 1 is insert.
+how to load the second table into 1st so that at the end 1st table will have 10 records.
+Ans: 
+
+select 
+case when b1.cdc_codes = 'Updates' then b1.employee2s
+ when b1.cdc_codes = 'NoChange' then b1.employee1s
+ when b1.cdc_codes = 'New' then b1.employee2s
+else 'Error' end as fin_cols
+from (select case when e2.id is null     then  'NoChange'
+when e1.id = e2.id and  concat(e1.dt,e1.prcs_cd,e1.amount) <> concat(e2.dt,e2.prcs_cd,e2.amount) then  'Updates'
+when e1.id is null then 'New'
+else 'Error' end as cdc_codes,
+concat(e1.dt,',',e1.id,',',e1.prcs_cd,',',e1.amount) as employee1s,
+concat(e2.dt,',',e2.id,',',e2.prcs_cd,',',e2.amount) as employee2s
+from basant_temp_ref_rgt as e1 full outer join basant_temp_ref_rw as e2
+on e1.id = e2.id) as b1
+
+**************************************************************************************************
+Q. Difference between MapPartition and MapPartitionWithIndex 
+Ans:
+
+************************************************************************************************************************************
+*************************************************************************************************************************************
+Tech Mahindra Interview Questions
+----------------------------------
+1. syntax of trait in scala
+2. what is mixin in scala
+3. write a query to find the difference between two salaries.
+
+Ans: 
+https://oracle-base.com/articles/misc/lag-lead-analytic-functions
+
+select emp_id, emp_name, dept, sal,
+LAG(sal,1,0) over (order by sal) as prev_sal,
+LAG(sal,1,0) over (order by sal) - sal as sal_diff
+from employee
+
+*********************************************************************************************************************************
+*********************************************************************************************************************************
+
+UHC Interview questions
+-----------------------
+1. Wild and Narrow Transformation in spark-scala
+Ans:
+Narrow transformation – In Narrow transformation, all the elements that are required to compute the records in single partition live in the single partition of parent RDD. 
+A limited subset of partition is used to calculate the result. Narrow transformations are the result of map(), filter()
+
+Wide transformation – In wide transformation, all the elements that are required to compute the records in the single partition may live in many partitions of parent RDD. 
+The partition may live in many partitions of parent RDD. Wide transformations are the result of groupbyKey() and reducebyKey()
+
+2. How to Sqoop tables from two databases and perform join operation on the same sqoop query.
+Ans : Not possible
+3. Max number of mappers can we give give in sqoop command.
+Ans: 
+ max number of mappers can be used is 4. Even if we give 8 mappers it will take 4 mappers.
+4. Split-by clause in sqoop
+Ans: 
+ If the –split-by clause is not specified, then the primary key of the table is used to create the splits while data import. At times the primary key of the table 
+ might not have evenly distributed values between the minimum and maximum range. Under such circumstances –split-by clause can be used to specify some other column 
+ that has even distribution of data to create splits so that data import is efficient.
+
+
+******************************************************************************************************************************************
+
+Mphasis Interview Questions
+----------------------------
+
+1. How to set Apache Spark Executor memory ?
+Ans: https://stackoverflow.com/questions/26562033/how-to-set-apache-spark-executor-memory
+
+2. What is the difference between Apache Spark SQLContext vs HiveContext?
+Ans: https://stackoverflow.com/questions/33666545/what-is-the-difference-between-apache-spark-sqlcontext-vs-hivecontext
+
+3. How to process a log file?
+Ans: http://www.awesomestats.in/spark-log-analysis/
+
+4. how to save a file as text, parquet?
+text - saveAsTextFile(path)
+parquet = .write.parquet()
+
+5. Stages of spark job like if rdd id map.filter.collect then what will be the stages of job?
+Ans: The job is broken into stages based on when the data needs to be reorganized. Each stage is  broken into tasks (which may be distributed across the cluster). Finally the 
+tasks are scheduled across your cluster and executed.
+
+6. How do you submit a spark job?
+Ans: https://spark.apache.org/docs/latest/submitting-applications.html
+
+
+8. How to check partition of an rdd
+Ans: https://databricks.gitbooks.io/databricks-spark-knowledge-base/content/performance_optimization/how_many_partitions_does_an_rdd_have.html
+
+9. how to delete a partition of a table
+Ans:  Alter table testpart drop partition (partcol=3)
+
+10. difference between rdbms and hive
+
+11. how to check the status of a spark job like in spark url
+Ans:  we can check the status in spark url. Also we can check the status from command line using 
+spark-submit --status [submission ID]
+
+12. dataframe to rdd
+Ans:  df.rdd
+
+13. compression in spark like snappy compression
+Ans: http://comphadoop.weebly.com/
+
+14. storage format in hadoop like sequential etc.
+Ans: 
+
+
+15. how to load data from normal hive table to parquet table
+Ans: To store the data in Parquet files, we first need to create one Hive table, which will store the data in a textual format. To insert data into the table from our text table, 
+we need to execute the following query: 
+insert into table employee_parquet
+select * from employee_text;
+
+
+16. difference between repartition and coalesce
+Ans:  
+coalesce(numPartitions) : Decrease the number of partitions in the RDD to numPartitions. Useful for running operations more efficiently 
+after filtering down a large dataset.
+
+repartition(numPartitions) : Reshuffle the data in the RDD randomly to create either more or fewer partitions and balance it across them. 
+This always shuffles all data over the network.
+
+17. limitation of sql query in spark i.e limitation of spark sql
+Ans:  It does not support operations like delete and update. Also it will not support stored procedure
+
+18. Can spark replace sqoop for ingestion of data
+Ans :  yes but depends on the memory of the clusture
+
+19. what are things that can be given in sqoop which cannot be done in spark during ingestion
+Ans: Everything can be done
+
+20.how to create a table with other table's schema
+Ans: Create table table_name like old_table_name
+
+21. Transform operator in hive 
+Ans:  The columns will be transformed to string and delimited by TAB before feeding to the user script, and the standard output of the user script 
+will be treated as TAB separated string columns.
+Syntax:
+
+INSERT OVERWRITE new_table_name 
+SELECT TRANSFORM (column_names) 
+USING 'user_script'
+AS (column_names )
+FROM table_name;
+
+***************************************************************************************************************************
+
+Rakesh's interview question consist of tech mahindra, dxc, Amadeus
+
+5.	When to use partitions and when to use bucketing. Give examples.
+7.	What is partitoner and combiner in mapreduce.
+
+8.	How do you register hive UDF permanently.
+Ans : https://stackoverflow.com/questions/20043448/how-to-add-a-permanent-function-in-hive
+
+9.	How do you write partitioner logic in mapreduce.
+Ans: http://data-flair.training/forums/topic/how-to-write-a-custom-partitioner-for-a-hadoop-mapreduce-job
+
+10.	What are optimisation techniques in spark.
+Ans: https://community.hortonworks.com/questions/117841/optimization-techniques-for-spark-jobs.html
+
+11.	How do you define sparksession while connecting with hive.
+
+12.	What is standalone cluster.
+Ans :  Hadoop can be used on a single machine (Standalone Mode) as well as on a cluster of machines (Distributed Mode – Pseudo & Fully).
+https://javabeginnerstutorial.com/hadoop/different-modes-of-hadoop/
+
+13. Difference between .MapPartition and .Map
+Ans : https://stackoverflow.com/questions/21185092/apache-spark-map-vs-mappartitions
+
+14.	Query to find duplicate rows in hive.
+Ans:
+select [every column], count(*)
+from mytable
+group by [every column]
+having count(*) > 1;
+
+15. Insert, update and delete in hive
+Ans: Can be done using CDC or using merge statement(available from hive 0.14 and later)
+Syntax of merge statement: 
+
+merge into customer
+using ( select * from new_customer_stage) sub
+on sub.id = customer.id
+when matched then update set name = sub.name, state = sub.new_state
+when not matched then insert values (sub.id, sub.name, sub.state);
+
+************************************************************************************************************************
+
+Afsal's Interview Questions in Hadoop and Spark
+**************************************************
+
+1.   Hadoop Architecture?
+Ans: 
+
+3.   Yarn Architecture
+Ans: https://data-flair.training/blogs/hadoop-yarn-tutorial/
+
+7.   How a spark program will work and spark Architecture
+Ans : https://data-flair.training/blogs/how-apache-spark-works/
+
+8.   File format supported in Hive
+9.   Role of Zookeeper
+Ans: 
+Zookeeper is a centralized open-source server for maintaining and managing configuration information, naming conventions and synchronization for distributed cluster environment.
+Zookeeper helps the distributed systems to reduce their management complexity by providing low latency and high availability.
+
+10.  Meta store in Sqoops
+11.  Paired RDD
+12.  Case Class, Traits, Singleton Object in Scala
+13.  Serialization and Deserialization in Spark
+14.  Map side Join, Reduce Side Join, Merge Join and Skew Join
+
+15.  Difference between cache and Persist?
+Ans: With cache(), you use only the default storage level MEMORY_ONLY. With persist(), you can specify which storage level you want
+
+18.  Tail Recursion
+
+20.  Spark shell and Spark Submit.
+Ans:
+Spark-Submit : Spark comes with the facility of a single script that can be used to submit a program, called as spark-submit. It launches the application on the cluster. 
+Spark-Shell :  Spark shell is an interactive environment where you can learn how to make the most out of Apache Spark quickly and conveniently.
+
+21.  How to create a UDF in Hive?
+
+22.  Implicit Keyword in Scala
+Ans: An implicit class is a class marked with the implicit keyword. This keyword makes the class’s primary constructor available for 
+implicit conversions when the class is in scope.
+
+23.  Curring in Scala
+Ans: Currying is the technique of transforming a function with multiple arguments into a function with just one argument. 
+The single argument is the value of the first argument from the original function and the function returns another single argument function.
+
+27.  Sqoop Incremental import?
+28.  What is the difference between split by and Boundary query in Sqoop?
+29.  How to Schedule and Run Ooziee?
+30.  Lateral view and Explode in Hive?
+35.  How to select 100 tables from 1000 table?
+36.  How to Handle Null Values?
+37.  Supported files in Hive?
+
+41.  What is the Safe mode in Hadoop?
+Ans:  A Safemode for Namenode is essentially a read-only mode for the HDFS cluster, where it does not allow any modifications to file system or blocks. 
+Normally, Namenode disables safe mode automatically at the beginning. If required, HDFS could be placed in safe mode explicitly using bin/hadoop dfsadmin -safemode command.
+
+42.  How to handle small files?
+Ans:  http://data-flair.training/forums/topic/how-to-resolve-small-file-problem-in-hdfs
+
+43.  How to match 2 RDD?
+Ans: https://www.google.co.in/search?rlz=1C1CHBF_enIN789IN789&biw=1366&bih=662&ei=PclaW6TFOdmQ0PEP4suKyAw&q=How+to+match+2+RDD&oq=How+to+match+2+RDD&gs_l=psy-ab.3..33i21k1.374817.374817.0.375316.1.1.0.0.0.0.279.279.2-1.1.0....0...1.1.64.psy-ab..0.1.277....0.uBoNb8oTdhI
+
+44.  How to import the data if no primary key?
+Ans: have to give -m 1 option for importing the data or you have to provide --split-by argument with some column name
+
+45.  What are the modes that can run in Hive and Spark?
+47.  What are the transformations applied on data?
+49.  Tell about your cluster configuration?
+50.  How are you getting the data and size of the data?
+52.  SCD and lately change in Dimension?
+53.  How to work with Maven project and Advantages?
+54.  Bit Bucket, Jenkins, Devops, Git Repository?
+55.  How to send Email using Ooziee?
+
+********************************************************************************************************************
+
+Capgemeni Interview Questions
+------------------------------
+1. Closure in Scala
+2. Parallelism and Concurrency in scala
+3. Monad in scala
+4. Trimap
+5. Higher order function
+6. Call by value and call by name
+7. Scala tribe
+8. Singleton class
+9. Components of hive
+10. difference between rank and row number in hive
+Ans : https://blog.jooq.org/2014/08/12/the-difference-between-row_number-rank-and-dense_rank/
+11. map reduce code behind hive query
+ans : Fetch  Task concept for hive
+
+
+
+*******************************************************ADOBE********************888888
+1. How to decide the number of executors and executor memory for spark job
+Ans: http://site.clairvoyantsoft.com/understanding-resource-allocation-configurations-spark-application/
+2. How to decide number of buckets in hive
+3. Difference by cluster by and distibute by during creating hive table with bucketing
+4. data skew
+
